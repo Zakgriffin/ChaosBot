@@ -25,7 +25,7 @@ module.exports = (message) => {
     let command = lowCase.split(' ')[0];
     let cmd = g.commands[command];
 
-    if(!g.contextData[sender]) {
+    if(!contextData[sender]) {
         // no context from user
         if(cmd || !g.userData[sender]) {
             if(!g.userData[sender]) {
@@ -34,7 +34,7 @@ module.exports = (message) => {
                 if(cmd) channel.send(`Hang on, you can't use a command until you enter your info`);
             }
             cmd = g.commands[command];
-            g.contextData[sender] = {
+            contextData[sender] = {
                 activeCommand: command,
                 neededDetails: cmd.neededDetails,
                 optionalDetails: cmd.optionalDetails,
@@ -45,7 +45,7 @@ module.exports = (message) => {
         } else return channel.send(`"${command}" is not a valid command`);
     } else if(cmd) return channel.send('Please finish entering the necessary details before starting a new command');
 
-    let senderContext = g.contextData[sender];
+    let senderContext = contextData[sender];
 
     // handling specific arguments
     if(command == 'done') {
@@ -56,12 +56,12 @@ module.exports = (message) => {
         }
         // command confirmed
         g.commands[senderContext.activeCommand].run(message, senderContext.details);
-        delete g.contextData[sender];
+        delete contextData[sender];
         return;
     }
     if(command == 'exit' && senderContext.activeCommand != 'newuser') {
         channel.send(`Exited command "${senderContext.activeCommand}"`);
-        delete g.contextData[sender];
+        delete contextData[sender];
         return;
     }
 
@@ -110,6 +110,7 @@ module.exports = (message) => {
             senderContext.details[detail] = result;
         } catch(err) {
             // could not parse content
+            console.error(err);
             problems.push(`"${raw}" ${err}`);
         }
     }

@@ -1,4 +1,4 @@
-exports.TextD = class {
+class TextD {
     constructor(text) {
         this.val = text;
     }
@@ -7,6 +7,7 @@ exports.TextD = class {
     isComplete() {return this.val != undefined;}
     standardForm() {return this.val;}
 }
+exports.TextD = TextD;
 
 exports.parse = (content) => {
     return new TextD(content);

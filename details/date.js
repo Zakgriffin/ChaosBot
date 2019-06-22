@@ -1,6 +1,6 @@
 const util = require('../util');
 
-exports.DateD = class {
+class DateD {
     constructor(month, day, year) {
         this.month = month;
         this.day = day;
@@ -9,7 +9,7 @@ exports.DateD = class {
 
     clone() {return new DateD(this.month, this.day, this.year);}
     isComplete() {return !isNaN(this.month) && !isNaN(this.day) && !isNaN(this.year);}
-    standardForm() {return prettyForm();}
+    standardForm() {return this.prettyForm();}
 
     slashFormat() {
         // 1/2/20
@@ -62,6 +62,7 @@ exports.DateD = class {
     daysInMonth() {return daysInMonth(this.month);}
     isLeapYear() {return isLeapYear(this.year);}
 }
+exports.DateD = DateD;
 
 exports.parse = (content) => {
     let month, day, year;
@@ -72,7 +73,7 @@ exports.parse = (content) => {
         curDate.getDate(),
         curDate.getFullYear()
     );
-    DateD.weekday = date.getDay();
+    DateD.weekday = curDate.getDay();
 
     if(content.includes('today')) {
         return cur;
@@ -96,7 +97,7 @@ exports.parse = (content) => {
         }
     } else {
         let arr = content.split(' ');
-        if(arr.length < 2) return {undefined};
+        if(arr.length < 2) return undefined;
         for(let [index, m] of months.entries()) {
             if(arr[0].substring(0, 3) == m.name.substring(0, 3)) {
                 month = index + 1;

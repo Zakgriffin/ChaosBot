@@ -1,4 +1,4 @@
-exports.TimeD = class {
+class TimeD {
     constructor(hour, mins) {
         this.hour = hour;
         this.mins = mins;
@@ -15,6 +15,7 @@ exports.TimeD = class {
         return `${hour}:${mins}${m}`;
     }
 }
+exports.TimeD = TimeD;
 
 exports.parse = (content) => {
     let m;

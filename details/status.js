@@ -1,4 +1,4 @@
-exports.StatusD = class {
+class StatusD {
     constructor(status) {
         this.val = status;
     }
@@ -16,6 +16,7 @@ exports.StatusD = class {
         }
     }
 }
+exports.StatusD = StatusD;
 
 exports.parse = (content) => {
     let status;
