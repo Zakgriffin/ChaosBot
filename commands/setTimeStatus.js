@@ -1,23 +1,23 @@
-const fs = require('fs');
+const g = require('../index');
+const util = require('../util');
 
-exports.start = (global, message) => {
+exports.start = (message) => {
     message.channel.send('Entered setTimeStatus command');
 }
 
-exports.run = (global, details) => {
-    const message = details.message;
+exports.run = (message, details) => {
     const user = message.author.id;
     const channel = message.channel;
-    const date = dateForm(details.date);
+    const date = details.date.slashForm();
 
-    let userData = global.userData[user];
+    let userData = g.userData[user];
     let oldStatus = userData[date];
 
     if(!oldStatus) oldStatus = '0U';
     let newStatus = insertTimeStatus(oldStatus, details.status.val, details.startTime, details.endTime);
     
-    global.userData[user][date] = newStatus;
-    global.saveUserData();
+    g.userData[user][date] = newStatus;
+    util.saveUserData();
 }
 
 exports.neededDetails = {
@@ -26,9 +26,7 @@ exports.neededDetails = {
     date: 'date',
     status: 'status'
 }
-exports.optionalDetails = {
-    
-}
+
 
 function insertTimeStatus(str, status, startTime, endTime) {
     let sVal = val(startTime);
@@ -75,8 +73,4 @@ function bitToTime(bit) {
   
 function val(time) {
     return time.hour * 100 + time.mins;
-}
-
-function dateForm(date) {
-    return `${date.month}/${date.day}/${date.year}`;
 }

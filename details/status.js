@@ -1,34 +1,37 @@
-exports.parse = (content) => {
-    let val;
-    if(hasWords(content, ['free', 'yes', 'open'])) {
-        val = 'Y';
-    } else if(hasWords(content, ['busy', 'no'])) {
-        val = 'N';
-    } else if(hasWords(content, ['unsure', 'remove'])) {
-        val = 'U';
+exports.StatusD = class {
+    constructor(status) {
+        this.val = status;
     }
-    return {
-        val,
 
-        standardForm
-    };
-}
-
-function hasWords(str, list) {
-    for(word of list) {
-        if(str.includes(word)) {
-            return true;
+    clone() {return new StatusD(this.val);}
+    isComplete() {return ['Y', 'N', 'U'].indexOf(this.val) != -1;}
+    standardForm() {
+        switch(this.val) {
+            case 'Y':
+                return 'Free';
+            case 'N':
+                return 'Busy';
+            case 'U':
+                return 'Unsure';
         }
     }
 }
 
-var standardForm = function() {
-    switch(this.val) {
-        case 'Y':
-            return 'Free';
-        case 'N':
-            return 'Busy';
-        case 'U':
-            return 'Unsure';
+exports.parse = (content) => {
+    let status;
+    if(content.containsWords(['free', 'yes', 'open'])) {
+        status = 'Y';
+    } else if(content.containsWords(['busy', 'no'])) {
+        status = 'N';
+    } else if(content.containsWords(['unsure', 'remove'])) {
+        status = 'U';
+    }
+
+    return new StatusD(status);
+}
+
+String.prototype.containsWords = function(list) {
+    for(word of list) {
+        if(this.includes(word)) return true;
     }
 }

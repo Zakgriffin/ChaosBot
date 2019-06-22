@@ -1,10 +1,13 @@
-exports.parse = (content) => {
-    return {
-        val: content.trim(),
+exports.TextD = class {
+    constructor(text) {
+        this.val = text;
+    }
 
-        standardForm
-    };
+    clone() {return new TextD(this.val);}
+    isComplete() {return this.val != undefined;}
+    standardForm() {return this.val;}
 }
-var standardForm = function() {
-    return this.val;
+
+exports.parse = (content) => {
+    return new TextD(content);
 }

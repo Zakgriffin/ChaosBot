@@ -1,11 +1,14 @@
-const fs = require('fs');
+const g = require('../index');
+const util = require('../util');
 
-exports.start = (global, message) => {
+exports.start = (message) => {
     message.channel.send('You must be new! Please fill in the necessary info');
 }
 
-exports.run = (global, details) => {
-    let user = details.message.author.id;
+exports.run = (message, details) => {
+    let user = message.author.id;
+    let channel = message.channel;
+
     let {firstName, lastName, email, phoneNum} = details;
     let result = {
         firstName: firstName.val,
@@ -14,13 +17,13 @@ exports.run = (global, details) => {
     if(email) result.email = email.val;
     if(phoneNum) result.phoneNum = phoneNum.val;
 
-    global.userData[user] = result;
-    details.message.channel.send(`Ok, ${firstName.val}, you're ready to go!`);
-    console.log(global.userData[user]);
+    g.userData[user] = result;
+    channel.send(`Ok, ${firstName.val}, you're ready to go!`);
 
-    global.saveUserData();
+    util.saveUserData();
 }
 
+// details
 exports.neededDetails = {
     firstName: 'text',
     lastName: 'text'

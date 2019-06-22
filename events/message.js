@@ -1,42 +1,51 @@
 const fs = require('fs');
+const g = require('../index');
+const {forFilesInFolder} = require('../util');
 
-module.exports = (global, message) => {
-    const config = global.config;
-    const client = global.client;
+// tracks cchat ontext with discord users
+let contextData = {};
+
+// details
+let detailList = {};
+forFilesInFolder('./details', (name, props) => {
+    detailList[name.toLowerCase()] = props;
+});
+
+// on event call
+module.exports = (message) => {
     // ignore all bots
     if(message.author.bot) return;
-    if(!message.content.startsWith(config.prefix)) return;
+    const prefix = g.config.prefix;
+    if(!message.content.startsWith(prefix)) return;
 
     const channel = message.channel;
     const sender = message.author.id;
-    let lowCase = message.content.toLowerCase().slice(config.prefix.length);
 
-    // grab the command data from the client.commands Enmap
+    let lowCase = message.content.toLowerCase().slice(prefix.length);
     let command = lowCase.split(' ')[0];
-    let cmd = global.commands.get(command);
+    let cmd = g.commands[command];
 
-    // starting new operation
-    if(!global.contextData[sender]) {
+    if(!g.contextData[sender]) {
         // no context from user
-        if(cmd || !global.userData[sender]) {
-            if(!global.userData[sender]) {
+        if(cmd || !g.userData[sender]) {
+            if(!g.userData[sender]) {
                 // new user setup
                 command = 'newuser';
                 if(cmd) channel.send(`Hang on, you can't use a command until you enter your info`);
             }
-            cmd = global.commands.get(command);
-            global.contextData[sender] = {
+            cmd = g.commands[command];
+            g.contextData[sender] = {
                 activeCommand: command,
                 neededDetails: cmd.neededDetails,
                 optionalDetails: cmd.optionalDetails,
                 details: {}
             }
-            cmd.start(global, message);
+            cmd.start(message);
             lowCase = lowCase.substring(command.length);
         } else return channel.send(`"${command}" is not a valid command`);
     } else if(cmd) return channel.send('Please finish entering the necessary details before starting a new command');
 
-    let senderContext = global.contextData[sender];
+    let senderContext = g.contextData[sender];
 
     // handling specific arguments
     if(command == 'done') {
@@ -46,71 +55,72 @@ module.exports = (global, message) => {
             }
         }
         // command confirmed
-        senderContext.details.message = message;
-        global.commands.get(senderContext.activeCommand).run(global, senderContext.details);
-        delete global.contextData[sender];
+        g.commands[senderContext.activeCommand].run(message, senderContext.details);
+        delete g.contextData[sender];
         return;
     }
     if(command == 'exit' && senderContext.activeCommand != 'newuser') {
         channel.send(`Exited command "${senderContext.activeCommand}"`);
-        delete global.contextData[sender];
+        delete g.contextData[sender];
         return;
     }
 
     // adding details
     const detailRaws = lowCase.split(',');
     let problems = [];
-    detailRaws.forEach(raw => {
+    for(let raw of detailRaws) {
         if(raw.length == 0) return;
         raw = raw.trim();
-        let type = raw.split(' ')[0];
-        const content = raw.slice(type.length).trim();
- 
-        const dets = Object.assign({},
-            senderContext.details,
+        // name of detail
+        let detail = raw.split(' ')[0];
+        const content = raw.slice(detail.length).trim();
+
+        // all details that can be used with this command
+        const allDetails = Object.assign({},
             senderContext.neededDetails,
             senderContext.optionalDetails
         );
-        // match for upper and lower case
+        // match forupper and lower case
         let match;
-        for(key in dets) {
-            if(key.toLowerCase() == type) {
-                type = key;
+        for(key in allDetails) {
+            if(key.toLowerCase() == detail) {
+                detail = key;
                 match = true;
                 break;
             }
         }
-        
-        if(!match) return problems.push(`"${type}" is not a valid detail`);
 
-        if(content == 'delete') {
-            delete senderContext.details[type];
-            return;
+        if(!match) {
+            problems.push(`"${detail}" is not a valid detail`);
+            continue;
         }
 
-        const parser = global.details.get(dets[type]);
+        if(content == 'delete') {
+            delete senderContext.details[detail];
+            continue;
+        }
+
+        const parser = detailList[allDetails[detail]];
         try {
             // parse content and modify sender context
             let result = parser.parse(content);
-            for(let key in result) {
-                // did not throw error, but not all info was retrieved
-                if(result[key] == undefined) throw `could not be understood as a ${dets[type]}`;
-            }
-            senderContext.details[type] = result;
+            // did not throw error, but not all info was retrieved
+            if(!result || !result.isComplete()) throw `could not be understood as a ${allDetails[detail]}`;
+            // set detail if all ok
+            senderContext.details[detail] = result;
         } catch(err) {
             // could not parse content
             problems.push(`"${raw}" ${err}`);
         }
-    })
+    }
 
-    const embed = new global.Discord.RichEmbed()
-        .setColor(0x0000FF)
+    const embed = new g.Discord.RichEmbed().setColor(0x0000FF);
 
     function getText(list, formatFunc) {
         let listText = '';
         for(key in list) {
             if(!senderContext.details[key])
-            listText += formatFunc(key, list[key]);
+                listText += formatFunc(key, list[key]);
         }
         return listText;
     }
@@ -120,28 +130,28 @@ module.exports = (global, message) => {
     for(key in senderContext.details) {
         text += `- ${key}: ${senderContext.details[key].standardForm()}\n`
     }
-    
+
     if(text) {
         embed.addField("Here's what I have", text);
     } else {
-        embed.addField("I don't have any detail info", `Please add some details with "${config.prefix}[detail] [info]"`);
+        embed.addField("I don't have any detail info", `Please add some details with "${prefix}[detail] [info]"`);
     }
 
     // details not given
     text = getText(senderContext.neededDetails,
-        (a, b) => {return `- a ${b}, ${a}\n`});
+        (a, b) => { return `- a ${b}, ${a}\n` });
     if(text) {
         embed.addField("Here's what I need", text);
     } else {
         text = getText(senderContext.optionalDetails,
-            (a, b) => {return `- a ${b}, ${a}\n`});
+            (a, b) => { return `- a ${b}, ${a}\n` });
         if(text) {
             embed.addField("I have everything I need, but you can still give me optional details like", text);
         } else {
-            embed.addField("Those are all the details I can use", 'But you can still modify anything if you would like');
+            embed.addField("Those are all the details I can use", 'But you can still modify anything ifyou would like');
         }
     }
-    
+
     if(problems.length > 0) {
         function getText() {
             let text = '';

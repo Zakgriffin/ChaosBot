@@ -1,3 +1,21 @@
+exports.TimeD = class {
+    constructor(hour, mins) {
+        this.hour = hour;
+        this.mins = mins;
+    }
+
+    clone() {return new TextD(this.hour, this.mins);}
+    isComplete() {return !isNaN(this.hour) && !isNaN(this.mins)}
+    standardForm() {
+        let mins = this.mins.toString();
+        let hour = this.hour % 12;
+        let m = this.hour == hour ? 'am' : 'pm';
+        if(hour == 0) hour = 12;
+        if(mins.length == 1) mins = '0' + mins;
+        return `${hour}:${mins}${m}`;
+    }
+}
+
 exports.parse = (content) => {
     let m;
     if(content.includes('am')) {
@@ -20,7 +38,7 @@ exports.parse = (content) => {
         hour = parseInt(content);
         mins = 0;
     }
-    if(isNaN(hour) || isNaN(mins)) return {undefined}; // generic could not understand error
+    if(isNaN(hour) || isNaN(mins)) return; // generic could not understand error
 
     if(hour > 12 || hour == 0) {
         // make sure valid military time
@@ -36,19 +54,5 @@ exports.parse = (content) => {
     if(mins >= 60) throw `minutes must be under 60`;
     if(mins < 0 || hour < 0) throw `the hour and minutes must be positive`;
 
-    return {
-        hour,
-        mins,
-
-        standardForm
-    };
-}
-
-var standardForm = function() {
-    let mins = this.mins.toString();
-    let hour = this.hour % 12;
-    let m = this.hour == hour ? 'am' : 'pm';
-    if(hour == 0) hour = 12;
-    if(mins.length == 1) mins = '0' + mins;
-    return `${hour}:${mins}${m}`;
+    return new TimeD(hour, mins);
 }

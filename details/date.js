@@ -1,51 +1,84 @@
-const months = [
-    {name: 'january',   days: 31},
-    {name: 'february',  days: 28}, //unless leap year :(
-    {name: 'march',     days: 31},
-    {name: 'april',     days: 30},
-    {name: 'may',       days: 31},
-    {name: 'june',      days: 30},
-    {name: 'july',      days: 31},
-    {name: 'august',    days: 31},
-    {name: 'september', days: 30},
-    {name: 'october',   days: 31},
-    {name: 'november',  days: 30},
-    {name: 'december',  days: 31}
-]
+const util = require('../util');
 
-const weekdays = [
-    'sunday',
-    'monday',
-    'tuesday',
-    'wednesday',
-    'thursday',
-    'friday',
-    'saturday'
-]
-
-exports.parse = (content) => {
-    /*
-    6/17/19 standard
-    June 17 2019
-    */
-    let month, day, year;
-
-    let date = new Date();
-    let cur = {
-        month: date.getMonth() + 1,
-        day: date.getDate(),
-        year: date.getFullYear(),
-        weekday: date.getDay()
+exports.DateD = class {
+    constructor(month, day, year) {
+        this.month = month;
+        this.day = day;
+        this.year = year;
     }
 
+    clone() {return new DateD(this.month, this.day, this.year);}
+    isComplete() {return !isNaN(this.month) && !isNaN(this.day) && !isNaN(this.year);}
+    standardForm() {return prettyForm();}
+
+    slashFormat() {
+        // 1/2/20
+        return `${this.month}/${this.day}/${this.year}`;
+    }
+    prettyForm() {
+        // January 2, 2020
+        let d = this.day;
+        let suffix = 'th';
+        if(d % 10 == 1) suffix = 'st';
+        if(d % 10 == 2) suffix = 'nd';
+        if(d % 10 == 3) suffix = 'rd';
+        if(d > 10 && d < 20) suffix = 'th';
+        let mName = util.capitalize(months[this.month - 1].name);
+        return `${mName} ${d}${suffix}, ${this.year}`;
+    }
+
+    daysInFuture(daysFuture) {
+        // returns a new date "daysFuture" days in the future
+        let n = this.clone();
+        n.day += daysFuture;
+    
+        let mDays = this.daysInMonth();
+        if(daysFuture > 0) {
+            // future
+            while(n.day > mDays) {
+                n.day -= mDays;
+                n.month++;
+                if(n.month > 12) {
+                    n.year++;
+                    n.month = 1;
+                }
+                mDays = this.daysInMonth();
+            }
+        } else {
+            // past
+            while(n.day < 1) {
+                n.day += mDays;
+                n.month--;
+                if(n.month < 1) {
+                    n.year--;
+                    n.month = 12;
+                }
+                mDays = this.daysInMonth();
+            }
+        }
+        return n;
+    }
+
+    daysInMonth() {return daysInMonth(this.month);}
+    isLeapYear() {return isLeapYear(this.year);}
+}
+
+exports.parse = (content) => {
+    let month, day, year;
+
+    let curDate = new Date();
+    let cur = new DateD(
+        curDate.getMonth() + 1,
+        curDate.getDate(),
+        curDate.getFullYear()
+    );
+    DateD.weekday = date.getDay();
+
     if(content.includes('today')) {
-        cur.standardForm = standardForm;
         return cur;
     }
     if(content.includes('tomorrow')) {
-        let tomorrow = getDateInFuture(cur, 1);
-        tomorrow.standardForm = standardForm;
-        return tomorrow;
+        return cur.daysInFuture(1);
     }
 
     let fromWeekday = getDateFromWeekday(content, cur);
@@ -83,6 +116,7 @@ exports.parse = (content) => {
     if(month > 12) throw 'the month can only go up to 12';
     let m = months[month - 1];
     if(day > daysInMonth(month, year)) throw `${global.util.capitalize(m.name)} only has ${daysInMonth(month, year)} days in it`;
+    
     /*
     if(year < cur.year) throw `you can't use a date from a previous year`;
     if(month < cur.month) throw `you can't use a date from a previous month`;
@@ -91,68 +125,46 @@ exports.parse = (content) => {
     }
     */
 
-    //console.log({month, day, year});
-    return {
-        day,
-        month,
-        year,
-
-        standardForm
-    };
+    return new DateD(month, day, year);
 }
 
-var standardForm = function() {
-    let d = this.day;
-    let suffix = 'th';
-    if(d % 10 == 1) suffix = 'st';
-    if(d % 10 == 2) suffix = 'nd';
-    if(d % 10 == 3) suffix = 'rd';
-    if(d > 10 && d < 20) suffix = 'th';
-    let mName = global.util.capitalize(months[this.month - 1].name);
-    return `${mName} ${d}${suffix}, ${this.year}`;
-}
+const months = [
+    {name: 'january',   days: 31},
+    {name: 'february',  days: 28}, //unless leap year :(
+    {name: 'march',     days: 31},
+    {name: 'april',     days: 30},
+    {name: 'may',       days: 31},
+    {name: 'june',      days: 30},
+    {name: 'july',      days: 31},
+    {name: 'august',    days: 31},
+    {name: 'september', days: 30},
+    {name: 'october',   days: 31},
+    {name: 'november',  days: 30},
+    {name: 'december',  days: 31}
+]
+
+const weekdays = [
+    'sunday',
+    'monday',
+    'tuesday',
+    'wednesday',
+    'thursday',
+    'friday',
+    'saturday'
+]
 
 function getDateFromWeekday(weekday, cur) {
+    // returns the date of the the upcoming "weekday"
     for(let [index, w] of weekdays.entries()) {
         if(weekday.includes(w.substring(0, 3))) {
             if(index < cur.weekday) index += 7;
-            return getDateInFuture(cur, index - cur.weekday);
+            return cur.daysInFuture(index - cur.weekday);
         }
     }
-}
-
-function getDateInFuture(date, daysFuture) {
-    let {month, day, year} = date;
-    day += daysFuture;
-
-    let mDays = daysInMonth(month, year);
-    if(daysFuture > 0) {
-        // future
-        while(day > mDays) {
-            day -= mDays;
-            month++;
-            if(month > 12) {
-                year++;
-                month = 1;
-            }
-            mDays = daysInMonth(month, year);
-        }
-    } else {
-        // past
-        while(day < 1) {
-            day += mDays;
-            month--;
-            if(month < 1) {
-                year--;
-                month = 12;
-            }
-            mDays = daysInMonth(month, year);
-        }
-    }
-    return {month, day, year}
 }
 
 function daysInMonth(month, year) {
+    // returns the number of days in "month". leap years known from "year"
     if(month == 2 && isLeapYear(year)) return 29;
     return months[month - 1].days;
 }
