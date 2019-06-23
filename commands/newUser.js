@@ -1,5 +1,5 @@
 const g = require('../index');
-const util = require('../util');
+const {saveUserData} = require('../util');
 
 exports.start = (message) => {
     message.channel.send('You must be new! Please fill in the necessary info');
@@ -11,8 +11,8 @@ exports.run = (message, details) => {
 
     let {firstName, lastName, email, phoneNum} = details;
     let result = {
-        firstName: firstName.val,
-        lastName: lastName.val
+        firstName: firstName.val.capitalize(),
+        lastName: lastName.val.capitalize()
     }
     if(email) result.email = email.val;
     if(phoneNum) result.phoneNum = phoneNum.val;
@@ -20,7 +20,8 @@ exports.run = (message, details) => {
     g.userData[user] = result;
     channel.send(`Ok, ${firstName.val}, you're ready to go!`);
 
-    util.saveUserData();
+    saveUserData();
+
 }
 
 // details

@@ -1,4 +1,3 @@
-// imports
 const fs = require("fs");
 const Discord = require("discord.js");
 const {forFilesInFolder} = require('./util');

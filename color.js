@@ -1,3 +1,6 @@
+/*
+Much of this code was stolen from () but has been modified to fit my needs
+*/
 exports.Color = class {
     constructor(a, b, c, type) {
         this.type = type ? type : 'rgb';
@@ -51,7 +54,7 @@ exports.Color = class {
         if(this.type != 'hsl') throw `could not convert, type is ${this.type}`;
         this.type = 'rgb';
 
-        var l = this.vals[2];
+        let l = this.vals[2];
 
         if(this.vals[1] == 0) {
             l = Math.round(l * 255);
@@ -66,12 +69,12 @@ exports.Color = class {
                 return p;
             }
 
-            var s = this.vals[1];
-            var q = (l < 0.5 ? l * (1 + s) : l + s - l * s);
-            var p = 2 * l - q;
-            var r = hue2rgb(p, q, this.vals[0] + 1 / 3);
-            var g = hue2rgb(p, q, this.vals[0]);
-            var b = hue2rgb(p, q, this.vals[0] - 1 / 3);
+            let s = this.vals[1];
+            let q = (l < 0.5 ? l * (1 + s) : l + s - l * s);
+            let p = 2 * l - q;
+            let r = hue2rgb(p, q, this.vals[0] + 1 / 3);
+            let g = hue2rgb(p, q, this.vals[0]);
+            let b = hue2rgb(p, q, this.vals[0] - 1 / 3);
 
             this.vals = [Math.round(r * 255), Math.round(g * 255), Math.round(b * 255)];
         }
@@ -87,15 +90,11 @@ exports.Color = class {
 
     interpolateHSL(color1, color2, factor) {
         if(arguments.length < 3) { factor = 0.5; }
-        var hsl1 = rgb2hsl(color1);
-        var hsl2 = rgb2hsl(color2);
-        for (var i = 0; i < 3; i++) {
+        let hsl1 = rgb2hsl(color1);
+        let hsl2 = rgb2hsl(color2);
+        for (let i = 0; i < 3; i++) {
             hsl1[i] += factor * (hsl2[i] - hsl1[i]);
         }
         return hsl2rgb(hsl1);
     }
-}
-
-exports.test = function() {
-    console.log('test');
 }

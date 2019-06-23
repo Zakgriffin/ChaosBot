@@ -1,12 +1,12 @@
 const fs = require('fs');
-module.exports = (global, guild) => {
+
+module.exports = (guild) => {
     /*
     create json file in "./saved_data/guilds/${name}"
     add to json "events" object and "users" array
     populate "users" with all active members
         - on new user, add them to "users" array
     */
-    const client = global.client;
     let path = `./saved_data/guilds/guild_${guild.id}.json`;
 
     if (fs.existsSync(path)) return console.log('Already Exists!');

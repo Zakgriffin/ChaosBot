@@ -1,8 +1,7 @@
-const fs = require('fs');
 const g = require('../index');
 const {forFilesInFolder} = require('../util');
 
-// tracks cchat ontext with discord users
+// tracks chat context with discord users
 let contextData = {};
 
 // details

@@ -1,7 +1,8 @@
 class TimeD {
-    constructor(hour, mins) {
+    constructor(hour, mins, status) {
         this.hour = hour;
         this.mins = mins;
+        if(status) this.status = status;
     }
 
     clone() {return new TextD(this.hour, this.mins);}
@@ -13,6 +14,16 @@ class TimeD {
         if(hour == 0) hour = 12;
         if(mins.length == 1) mins = '0' + mins;
         return `${hour}:${mins}${m}`;
+    }
+
+    toString(status) {
+        if(!status) status = this.status;
+        if(this.mins == 0) return `${this.hour}${status}`;
+        return `${this.hour}:${this.mins}${status}`;
+    }
+      
+    val() {
+        return time.hour * 100 + time.mins;
     }
 }
 exports.TimeD = TimeD;
@@ -56,4 +67,14 @@ exports.parse = (content) => {
     if(mins < 0 || hour < 0) throw `the hour and minutes must be positive`;
 
     return new TimeD(hour, mins);
+}
+
+String.prototype.toTime = function() {
+    // converts time in string form like "3:45U"
+    let status = this.charAt(this.length - 1);
+    let arr = this.split(':');
+    let hour, mins = 0;
+    if(arr.length == 2) mins = parseInt(arr[1]);
+    hour = parseInt(arr[0]);
+    return new TimeD(hour, mins, status);
 }

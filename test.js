@@ -1,5 +1,18 @@
 const PImage = require('pureimage');
 
+let data;
+
+for(let i = 0; i < 20; i++) {
+    let bar = [];
+    let slice = {
+        bar,
+        label: ''
+    };
+}
+
+
+
+/*
 function makeGraph(data, xLabels, yLabels, xPad, yPad, colorFrom, colorTo) {
     let img1 = PImage.make(1000, 750);
     let ctx = img1.getContext('2d');
@@ -21,7 +34,7 @@ function makeGraph(data, xLabels, yLabels, xPad, yPad, colorFrom, colorTo) {
             for (let c = 0; c < xCount; c++) {
                 if (c == 0) {
                     ctx.fillStyle = '#ffffff';
-                    ctx.fillText(`${c}`, c * xOff + xPad/* + xOff / 2 - 3*/, yPad / 2);
+                    ctx.fillText(`${c}`, c * xOff + xPad + xOff / 2 - 3, yPad / 2);
                 }
                 //`rgb(${data[r][c] * 100},0,0)`
                 let col = _interpolateHSL(colorFrom, colorTo, data[r][c]);
@@ -58,3 +71,4 @@ let cFrom = [255, 0, 0]
 let cTo = [0, 255, 0]
 
 makeGraph(arr2, ['a', 'b', 'c', 'd'], ['1', '2', '3', '4'], 50, 50, cFrom, cTo);
+*/

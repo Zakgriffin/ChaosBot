@@ -14,13 +14,18 @@ exports.forFilesInFolder = (folderPath, action, callback) => {
     });
 }
 
-global.saveUserData = function() {
-    let data = JSON.stringify(userData, null, 2);
+exports.saveUserData = function() {
+    let data = JSON.stringify(g.userData, null, 2);
     fs.writeFile('./saved_data/user_data.json', data, (err) => {
         if(err) throw err;
     });
 }
-
+/*
 exports.capitalize = (string) => {
     return string.charAt(0).toUpperCase() + string.slice(1);
+}
+*/
+//exports.capitalize = String.prototype.capitalize;
+String.prototype.capitalize = function() {
+    return this[0].toUpperCase() + this.slice(1);
 }
