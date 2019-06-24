@@ -87,3 +87,11 @@ String.prototype.toTime = function() {
     hour = parseInt(arr[0]);
     return new TimeD(hour, mins, status);
 }
+
+Number.prototype.toHour = function() {
+    let hour = this % 12;
+    let m = this == hour ? 'am' : 'pm';
+    if(this % 24 == 0) m = 'am';
+    if(hour == 0) hour = 12;
+    return `${hour} ${m}`;
+}
