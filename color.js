@@ -1,7 +1,9 @@
 /*
 Much of this code was stolen from () but has been modified to fit my needs
 */
-exports.Color = class {
+const {map} = require('./util');
+
+class Color {
     constructor(a, b, c, type) {
         this.type = type ? type : 'rgb';
         this.vals = [a, b, c];
@@ -46,8 +48,8 @@ exports.Color = class {
             }
             h /= 6;
         }
-
         this.vals = [h, s, l];
+        return this;
     }
 
     hsl2rgb() {
@@ -58,7 +60,8 @@ exports.Color = class {
 
         if(this.vals[1] == 0) {
             l = Math.round(l * 255);
-            return [l, l, l];
+            this.vals =[l, l, l];
+            return this;
         } else {
             function hue2rgb(p, q, t) {
                 if(t < 0) t += 1;
@@ -78,23 +81,27 @@ exports.Color = class {
 
             this.vals = [Math.round(r * 255), Math.round(g * 255), Math.round(b * 255)];
         }
+        return this;
     }
 
     rgb2hex() {
         if(this.type != 'rgb') throw `could not convert, type is ${this.type}`;
         this.type = 'hex';
         this.vals = "#" + ((1 << 24) + (this.vals[0] << 16) + (this.vals[1] << 8) + this.vals[2]).toString(16).slice(1);
+        return this;
     }
+}
+exports.Color = Color;
 
-    // static
-
-    interpolateHSL(color1, color2, factor) {
-        if(arguments.length < 3) { factor = 0.5; }
-        let hsl1 = rgb2hsl(color1);
-        let hsl2 = rgb2hsl(color2);
-        for (let i = 0; i < 3; i++) {
-            hsl1[i] += factor * (hsl2[i] - hsl1[i]);
-        }
-        return hsl2rgb(hsl1);
+// static
+exports.interpolateHSL = function(color1, color2, factor) {
+    if(color1.type == 'rgb') color1.rgb2hsl();
+    if(color2.type == 'rgb') color2.rgb2hsl();
+    if(arguments.length < 3) factor = 0.5;
+    let blend = new Color(0, 0, 0, 'hsl');
+    for(let i = 0; i < 3; i++) {
+        blend.vals[i] = map(factor, 0, 1, color1.vals[i], color2.vals[i]);
+        //blend.vals[i] += factor * (color2.vals[i] - color1.vals[i]);
     }
+    return blend;
 }

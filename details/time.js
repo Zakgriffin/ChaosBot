@@ -21,9 +21,18 @@ class TimeD {
         if(this.mins == 0) return `${this.hour}${status}`;
         return `${this.hour}:${this.mins}${status}`;
     }
-      
+
+    dif(time2) {
+        let h = this.hour, m = this.mins;
+        if(this.mins < time2.mins) {
+            h--;
+            m += 60;
+        }
+        return new TimeD(h - time2.hour, m - time2.mins);
+    }
+
     val() {
-        return time.hour * 100 + time.mins;
+        return this.hour + this.mins / 60;
     }
 }
 exports.TimeD = TimeD;
