@@ -1,8 +1,9 @@
 const g = require('../index');
 const util = require('../util');
+const {makeGraphImage} = require('../display')
 
 exports.start = (message) => {
-    message.channel.send('Entered setTimeStatus command');
+    message.channel.send('How would you like to change your availabilty?');
 }
 
 exports.run = (message, details) => {
@@ -11,13 +12,24 @@ exports.run = (message, details) => {
     const date = details.date.slashForm();
 
     let userData = g.userData[user];
-    let oldStatus = userData[date];
+    if(!userData.dates) g.userData[user].dates = {};
+    let oldStatus = userData.dates[date];
 
-    if(!oldStatus) oldStatus = '0U';
+    if(!oldStatus) oldStatus = '';
     let newStatus = insertTimeStatus(oldStatus, details.status.val, details.startTime, details.endTime);
-    
-    g.userData[user][date] = newStatus;
+
+    g.userData[user].dates[date] = newStatus;
     util.saveUserData();
+    
+    let bar = newStatus.split(' ');
+    for(let i = 0; i < bar.length; i++) {
+        let time = bar[i].toTime();
+        bar[i] = {time, val: time.status.statToVal()};
+    }
+    let data = [{bar, label: date}];
+    makeGraphImage(`${user}_tempImg.png`, data, 0, 24).then(() => {
+        channel.send("Your status has been updated!", {files: [`${user}_tempImg.png`]});
+    });
 }
 
 exports.neededDetails = {
@@ -29,6 +41,7 @@ exports.neededDetails = {
 
 
 function insertTimeStatus(str, status, startTime, endTime) {
+    if(str[0] != '0') str = '0U' + str;
     let sVal = startTime.val();
     let eVal = endTime.val();
     let arr = str.split(' ');
@@ -38,7 +51,7 @@ function insertTimeStatus(str, status, startTime, endTime) {
         let cur = arr[i].toTime();
         let b = cur.val();
         let s = cur.status;
-        if(!flag && b < eVal) {
+        if(!flag && b <= eVal) {
             if(b < sVal) {
                 // edge case no overlap
                 arr.splice(i, 0, arr[i]);

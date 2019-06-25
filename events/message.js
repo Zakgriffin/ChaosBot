@@ -63,57 +63,57 @@ module.exports = (message) => {
         delete contextData[sender];
         return;
     }
-
     // adding details
-    const detailRaws = lowCase.split(',');
     let problems = [];
-    for(let raw of detailRaws) {
-        if(raw.length == 0) return;
-        raw = raw.trim();
-        // name of detail
-        let detail = raw.split(' ')[0];
-        const content = raw.slice(detail.length).trim();
+    if(lowCase) {
+        const detailRaws = lowCase.split(',');
+        for(let raw of detailRaws) {
+            if(raw.length == 0) return;
+            raw = raw.trim();
+            // name of detail
+            let detail = raw.split(' ')[0];
+            const content = raw.slice(detail.length).trim();
 
-        // all details that can be used with this command
-        const allDetails = Object.assign({},
-            senderContext.neededDetails,
-            senderContext.optionalDetails
-        );
-        // match forupper and lower case
-        let match;
-        for(key in allDetails) {
-            if(key.toLowerCase() == detail) {
-                detail = key;
-                match = true;
-                break;
+            // all details that can be used with this command
+            const allDetails = Object.assign({},
+                senderContext.neededDetails,
+                senderContext.optionalDetails
+            );
+            // match forupper and lower case
+            let match;
+            for(key in allDetails) {
+                if(key.toLowerCase() == detail) {
+                    detail = key;
+                    match = true;
+                    break;
+                }
+            }
+
+            if(!match) {
+                problems.push(`"${detail}" is not a valid detail`);
+                continue;
+            }
+
+            if(content == 'delete') {
+                delete senderContext.details[detail];
+                continue;
+            }
+
+            const parser = detailList[allDetails[detail]];
+            try {
+                // parse content and modify sender context
+                let result = parser.parse(content);
+                // did not throw error, but not all info was retrieved
+                if(!result || !result.isComplete()) throw `could not be understood as a ${allDetails[detail]}`;
+                // set detail if all ok
+                senderContext.details[detail] = result;
+            } catch(err) {
+                // could not parse content
+                problems.push(`"${raw}" ${err}`);
             }
         }
-
-        if(!match) {
-            problems.push(`"${detail}" is not a valid detail`);
-            continue;
-        }
-
-        if(content == 'delete') {
-            delete senderContext.details[detail];
-            continue;
-        }
-
-        const parser = detailList[allDetails[detail]];
-        try {
-            // parse content and modify sender context
-            let result = parser.parse(content);
-            // did not throw error, but not all info was retrieved
-            if(!result || !result.isComplete()) throw `could not be understood as a ${allDetails[detail]}`;
-            // set detail if all ok
-            senderContext.details[detail] = result;
-        } catch(err) {
-            // could not parse content
-            console.error(err);
-            problems.push(`"${raw}" ${err}`);
-        }
     }
-
+    
     const embed = new g.Discord.RichEmbed().setColor(0x0000FF);
 
     function getText(list, formatFunc) {
@@ -148,7 +148,7 @@ module.exports = (message) => {
         if(text) {
             embed.addField("I have everything I need, but you can still give me optional details like", text);
         } else {
-            embed.addField("Those are all the details I can use", 'But you can still modify anything ifyou would like');
+            embed.addField("Those are all the details I can use", 'But you can still modify anything if you would like');
         }
     }
 

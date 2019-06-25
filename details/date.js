@@ -11,7 +11,7 @@ class DateD {
     isComplete() {return !isNaN(this.month) && !isNaN(this.day) && !isNaN(this.year);}
     standardForm() {return this.prettyForm();}
 
-    slashFormat() {
+    slashForm() {
         // 1/2/20
         return `${this.month}/${this.day}/${this.year}`;
     }
@@ -23,7 +23,7 @@ class DateD {
         if(d % 10 == 2) suffix = 'nd';
         if(d % 10 == 3) suffix = 'rd';
         if(d > 10 && d < 20) suffix = 'th';
-        let mName = util.capitalize(months[this.month - 1].name);
+        let mName = months[this.month - 1].name.capitalize();
         return `${mName} ${d}${suffix}, ${this.year}`;
     }
 

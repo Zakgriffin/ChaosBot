@@ -101,7 +101,6 @@ exports.interpolateHSL = function(color1, color2, factor) {
     let blend = new Color(0, 0, 0, 'hsl');
     for(let i = 0; i < 3; i++) {
         blend.vals[i] = map(factor, 0, 1, color1.vals[i], color2.vals[i]);
-        //blend.vals[i] += factor * (color2.vals[i] - color1.vals[i]);
     }
     return blend;
 }

@@ -95,3 +95,10 @@ Number.prototype.toHour = function() {
     if(hour == 0) hour = 12;
     return `${hour} ${m}`;
 }
+
+String.prototype.statToVal = function() {
+    if(this == 'Y') return 1;
+    if(this == 'N') return 0;
+    if(this == 'U') return 0.5;
+    throw 'status could not be converted to value';
+}

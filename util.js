@@ -1,16 +1,18 @@
 const fs = require('fs');
-//const g = require('./index');
+const g = require('./index');
 
-exports.forFilesInFolder = (folderPath, action, callback) => {
-    fs.readdir(folderPath, (err, files) => {
-        if(err) throw err;
-        for(let file of files) {
-            if(!file.endsWith(".js")) return;
-            let name = file.split(".")[0];
-            let props = require(`${folderPath}/${file}`);
-            action(name, props);
-        };
-        if(callback) callback();
+exports.forFilesInFolder = (folderPath, action) => {
+    return new Promise((resolve, reject) => {
+        fs.readdir(folderPath, (err, files) => {
+            if(err) reject(err);
+            for(let file of files) {
+                if(!file.endsWith(".js")) return;
+                let name = file.split(".")[0];
+                let props = require(`${folderPath}/${file}`);
+                action(name, props);
+            };
+            resolve();
+        });
     });
 }
 
@@ -20,17 +22,12 @@ exports.saveUserData = function() {
         if(err) throw err;
     });
 }
-/*
-exports.capitalize = (string) => {
-    return string.charAt(0).toUpperCase() + string.slice(1);
-}
-*/
-//exports.capitalize = String.prototype.capitalize;
+
 String.prototype.capitalize = function() {
     return this[0].toUpperCase() + this.slice(1);
 }
 
 exports.map = function(value, start1, stop1, start2, stop2) {
-    if(start1 == stop2) throw `start and stop match, you don't wanna do that buddy`;
+    if(start1 == stop2) return start1;
     return start2 + (stop2 - start2) * ((value - start1) / (stop1 - start1));
 }
