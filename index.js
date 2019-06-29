@@ -1,16 +1,8 @@
 const fs = require("fs");
 const Discord = require("discord.js");
 const {forFilesInFolder} = require('./util');
-const config = require('./config.json');
 const client = new Discord.Client();
-
-// commands
-let commands = {};
-let getCommands = forFilesInFolder('./commands', (commandName, command) => {
-    commands[commandName.toLowerCase()] = command;
-}).then(_ => {
-    exports.commands = commands;
-});
+const {token} = require('./config.json');
 
 // events
 let getEvents = forFilesInFolder('./events', (eventName, event) => {
@@ -26,11 +18,9 @@ let getUserData = new Promise((resolve, reject) => {
     });
 });
 
-Promise.all([getCommands, getEvents, getUserData]).then(_ => {
-    client.login(config.token);
-    
+Promise.all([getEvents, getUserData]).then(_ => {
+    client.login(token);
 });
 
 exports.client = client;
 exports.Discord = Discord;
-exports.config = config;

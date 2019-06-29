@@ -102,3 +102,91 @@ String.prototype.statToVal = function() {
     if(this == 'U') return 0.5;
     throw 'status could not be converted to value';
 }
+
+
+
+console.log(updateTimeSlot(
+'0U 10Y',
+'Y',
+{hour: 1, mins: 0},
+{hour: 4, mins: 0}
+));
+  
+/*
+let start = '2Y 7U';
+
+let tests = [
+['N', 1, 4, '1N 4Y 7U'],
+['N', 5, 8, '2Y 5N 8U'],
+['N', 4, 7, '2Y 4N 7U'],
+['N', 2, 5, '2N 5Y 7U'],
+['N', 3, 6, '2Y 3N 6Y 7U'],
+['N', 1, 8, '1N 8U'],
+['N', 2, 7, '2N 7U'],
+
+['Y', 1, 4, '1Y 7U'],
+['Y', 5, 8, '2Y 8U'],
+['Y', 4, 7, '2Y 7U'],
+['Y', 2, 5, '2Y 7U'],
+['Y', 3, 6, '2Y 7U'],
+['Y', 1, 8, '1Y 8U'],
+['Y', 2, 7, '2Y 7U']
+];
+
+for(let i = 0; i < tests.length; i++) {
+let k = tests[i];
+let t = updateTimeSlot(
+    start,
+    k[0],
+    {hour: k[1], mins: 0},
+    {hour: k[2], mins: 0}
+);
+if(t != tests[i][3]) {
+    console.log(
+    `${t} | ${k[3]} | ${k[1]} - ${k[2]} | ${k[0]}`
+    );
+}
+}
+*/
+function updateTimeSlot(str, status, startTime, endTime) {
+let arr = str.split(' ');
+
+let s = 0, e = arr.length - 1;
+for(;s < arr.length - 1; s++) {
+    if(val(arr[s]) >= val(startTime)) break;
+}
+for(;e > 0; e--) {
+    if(val(arr[e]) <= val(endTime)) break;
+}
+
+let flag, optStatus;
+if(s === 0 || toObj(arr[s - 1]).status != status) flag = true;
+if(toObj(arr[e]).status != status) optStatus = toObj(arr[e]).status;
+
+if(s <= e) arr.splice(s, e - s + 1);
+
+if(flag) arr.splice(s, 0, toStr(startTime, status));
+if(optStatus)arr.splice(s + 1, 0, toStr(endTime, optStatus));
+
+return arr.join(' ');
+}
+
+function toStr(time, status) {
+if(time.mins === 0) return `${time.hour}${status}`;
+return `${time.hour}:${time.mins}${status}`;
+}
+
+function toObj(string) {
+let status = string.charAt(string.length - 1);
+let arr = string.split(':');
+let hour, mins = 0;
+if(arr.length == 2) mins = parseInt(arr[1]);
+hour = parseInt(arr[0]);
+return {hour, mins, status};
+}
+
+function val(time) {
+if(typeof time == 'string')
+    return val(toObj(time));
+return time.hour * 100 + time.mins;
+}

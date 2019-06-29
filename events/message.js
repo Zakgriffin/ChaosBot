@@ -1,8 +1,15 @@
 const g = require('../index');
 const {forFilesInFolder} = require('../util');
+const {prefix} = require('../config.json');
 
 // tracks chat context with discord users
 let contextData = {};
+
+// commands
+let commands = {};
+let getCommands = forFilesInFolder('./commands', (commandName, command) => {
+    commands[commandName.toLowerCase()] = command;
+});
 
 // details
 let detailList = {};
@@ -14,7 +21,6 @@ forFilesInFolder('./details', (name, props) => {
 module.exports = (message) => {
     // ignore all bots
     if(message.author.bot) return;
-    const prefix = g.config.prefix;
     if(!message.content.startsWith(prefix)) return;
 
     const channel = message.channel;
@@ -22,7 +28,7 @@ module.exports = (message) => {
 
     let lowCase = message.content.toLowerCase().slice(prefix.length);
     let command = lowCase.split(' ')[0];
-    let cmd = g.commands[command];
+    let cmd = commands[command];
 
     if(!contextData[sender]) {
         // no context from user
@@ -32,7 +38,7 @@ module.exports = (message) => {
                 command = 'newuser';
                 if(cmd) channel.send(`Hang on, you can't use a command until you enter your info`);
             }
-            cmd = g.commands[command];
+            cmd = commands[command];
             contextData[sender] = {
                 activeCommand: command,
                 neededDetails: cmd.neededDetails,
@@ -54,7 +60,7 @@ module.exports = (message) => {
             }
         }
         // command confirmed
-        g.commands[senderContext.activeCommand].run(message, senderContext.details);
+        commands[senderContext.activeCommand].run(message, senderContext.details);
         delete contextData[sender];
         return;
     }
