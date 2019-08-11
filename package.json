@@ -1,0 +1,24 @@
+{
+  "name": "chaosbot",
+  "version": "1.0.0",
+  "description": "",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/Zakgriffin/ChaosBot.git"
+  },
+  "author": "Zak Griffin",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/Zakgriffin/ChaosBot/issues"
+  },
+  "homepage": "https://github.com/Zakgriffin/ChaosBot#readme",
+  "dependencies": {
+    "discord.js": "^11.5.1",
+    "googleapis": "^39.2.0",
+    "pureimage": "^0.1.6"
+  }
+}

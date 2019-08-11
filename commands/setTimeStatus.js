@@ -1,7 +1,3 @@
-const g = require('../index');
-const util = require('../util');
-const {makeGraphImage} = require('../display')
-
 exports.start = (message) => {
     message.channel.send('How would you like to change your availabilty?');
 }

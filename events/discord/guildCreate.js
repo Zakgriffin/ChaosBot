@@ -1,6 +1,6 @@
 const fs = require('fs');
 
-module.exports = (guild) => {
+exports.onEvent = () => {
     /*
     create json file in "./saved_data/guilds/${name}"
     add to json "events" object and "users" array
@@ -22,3 +22,5 @@ module.exports = (guild) => {
 
     fs.writeFileSync(path, JSON.stringify(guildData, null, 2));
 }
+
+exports.eventSource = 'discord';

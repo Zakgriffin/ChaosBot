@@ -1,6 +1,3 @@
-const g = require('../index');
-const {saveUserData} = require('../util');
-
 exports.start = (message) => {
     message.channel.send('You must be new! Please fill in the necessary info');
 }
