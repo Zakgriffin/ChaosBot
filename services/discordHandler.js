@@ -20,8 +20,7 @@ client.on('message', message => {
     if(!commands[cmd]) return;
 
     // valid start command
-    let pass = content.split(cmd)[1];
-    App.trigger('newCommand', pass, new Conversation(message));
+    App.trigger('newCommand', commands[cmd], content, new Conversation(message));
 })
 
 exports.finishSetup = function() {

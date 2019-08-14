@@ -1,5 +1,3 @@
-const util = require('../util');
-
 class DateD {
     constructor(month, day, year) {
         this.month = month;

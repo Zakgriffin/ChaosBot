@@ -27,7 +27,6 @@ class Conversation {
             this.channel.send(question);
             this.asked = {resolve, reject};
         });
-        console.log(this.asked);
         return promise;
     }
 
@@ -43,7 +42,7 @@ class Conversation {
     }
 }
 Conversation.instances = {};
-setInterval(() => console.log(Conversation.instances), 500);
+//setInterval(() => console.log(Conversation.instances), 500);
 
 Conversation.onMessage = function(message) {
     let {guild, user} = msgBits(message);
