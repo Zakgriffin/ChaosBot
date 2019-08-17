@@ -17,7 +17,7 @@ class Conversation {
         } else if(this.asked){
             // user responded
             this.channel = message.channel;
-            this.asked.resolve(message);
+            this.asked.resolve(message.content);
             this.asked = null;
         }
     }

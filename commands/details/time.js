@@ -104,14 +104,15 @@ String.prototype.statToVal = function() {
 }
 
 
-
+/*
 console.log(updateTimeSlot(
 '0U 10Y',
 'Y',
 {hour: 1, mins: 0},
 {hour: 4, mins: 0}
 ));
-  
+*/  
+
 /*
 let start = '2Y 7U';
 

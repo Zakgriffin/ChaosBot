@@ -11,7 +11,7 @@ const commands = filesToObject('./commands');
 client.on('message', message => {
     if(message.author.bot) return;
     if(Conversation.onMessage(message)) return;
-    let {guild, user, content} = msgBits(message);
+    let {guild, content} = msgBits(message);
 
     let prefix = App.groups[guild].prefix;
     if(!content.startsWith(prefix)) return;

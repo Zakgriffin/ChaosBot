@@ -14,7 +14,7 @@ exports.map = function(value, start1, stop1, start2, stop2) {
     return start2 + (stop2 - start2) * ((value - start1) / (stop1 - start1));
 }
 
-String.prototype.camelToSpace = function() {
+String.prototype.camelToSpaces = function() {
     str = this[0].toUpperCase() + this.substring(1);
     return str.split(/(?=[A-Z])/).join(' ');
 }

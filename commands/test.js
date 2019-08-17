@@ -1,24 +1,21 @@
 exports.onCall = convo => {
-    // 
     message.channel.send('Entered test command');
 }
 
-exports.run = (message, details) => {
+exports.run = details => {
     message.channel.send('WORKS');
 }
 
 exports.detailTemplate = {
-    needed: {
-        date: {},
-        timeRange: {
-            startTime: 'Starting',
-            endTime: 'Ending'
-        }
+    start: {type: 'time', keywords: ['starting']},
+    end: {type: 'time', keywords: ['ending']},
+    date: {type: 'date', keywords: ['on']},
+    range: {
+        type: 'timeRange',
+        references: ['start','end']
     },
-    optional: {
-        string: {
-            name: 'title',
-            keywords: ['called', 'named']
-        }
+    formats: {
+        needed: ['start', 'end'],
+        optional: ['date']
     }
 }

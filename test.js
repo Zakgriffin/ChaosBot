@@ -38,7 +38,7 @@ let b = {
 }
 
 let a = {
-    Start: {type: 'time', keywords: ['Starting']},
+    start: {type: 'time', keywords: ['Starting']},
     End: {type: 'time', keywords: ['ending']},
     Date: {type: 'date', keywords: ['on']},
     Range: {
@@ -51,8 +51,5 @@ let a = {
     }
 }
 
-console.log('- ' + ['a', 'b', 'c'].join('\n- '));
-//console.log(camelToSpace('HeyHowAreYou'));
-const {DateD} = require('./commands/details/date');
-let h = new DateD();
-console.log(h instanceof Object);
+require('./functions/primitive');
+//console.log(templateParse(a));
