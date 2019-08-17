@@ -53,3 +53,9 @@ let a = {
 
 require('./functions/primitive');
 //console.log(templateParse(a));
+
+let t = [' fefe', 'dff '];
+
+t = t.map(det => det.trim());
+
+console.log(t);

@@ -18,3 +18,11 @@ String.prototype.camelToSpaces = function() {
     str = this[0].toUpperCase() + this.substring(1);
     return str.split(/(?=[A-Z])/).join(' ');
 }
+
+String.prototype.cutBefore = function(b) {
+    return this.includes(b) ? this.substring(this.indexOf(b) + 1) : '';
+}
+
+String.prototype.cutAfter = function(b) {
+    return this.includes(b) ? this.substring(0, this.indexOf(b) + 1) : this;
+}

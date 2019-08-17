@@ -1,23 +1,28 @@
+const App = require('../App');
 const {msgBits} = require('../functions/other');
 
 class Conversation {
     constructor(source) {
         Object.assign(this, msgBits(source));
+        this.prefix = App.groups[this.guild].prefix;
         delete this.content;
         if(!Conversation.instances[this.guild]) Conversation.instances[this.guild] = {};
         Conversation.instances[this.guild][this.user] = this;
     }
 
     onMessage(message) {
-        if(message.content.split()[0].toLowerCase().includes('exit')) {
+        let content = message.content;
+        if(!content.startsWith(this.prefix)) return;
+        
+        if(content.split()[0].toLowerCase().includes('exit')) {
             // user exited conversation
             this.send('Exited!');
             if(this.asked) this.asked.reject();
             this.end();
-        } else if(this.asked){
+        } else if(this.asked) {
             // user responded
             this.channel = message.channel;
-            this.asked.resolve(message.content);
+            this.asked.resolve(content);
             this.asked = null;
         }
     }
