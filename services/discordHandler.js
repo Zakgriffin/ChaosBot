@@ -17,10 +17,17 @@ client.on('message', message => {
     }
 
     if(message.author.bot) return;
-    if(Conversation.onMessage(message)) return;
-    let {guild, content} = msgBits(message);
 
+    let bits = msgBits(message);
+    let {guild, content, user} = bits;
+
+    if(Conversation.onMessage(message)) return;
     let prefix = Database.getGroup(guild).prefix;
+
+    if(!Database.existsUser(user) && content.startsWith(prefix)) {
+        App.trigger('newCommand', commands.newUser, content, new Conversation(bits));
+        return;
+    }
     Database.unloadGroup(guild);
     if(!content.startsWith(prefix)) return;
 
@@ -28,7 +35,7 @@ client.on('message', message => {
     if(!commands[cmd]) return;
 
     // valid start command
-    App.trigger('newCommand', commands[cmd], content, new Conversation(message));
+    App.trigger('newCommand', commands[cmd], content, new Conversation(bits));
 })
 
 exports.finishSetup = function() {

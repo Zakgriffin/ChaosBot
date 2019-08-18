@@ -1,24 +1,22 @@
-exports.start = (message) => {
-    message.channel.send('You must be new! Please fill in the necessary info');
+const Database = require('../services/databaseHandler');
+
+exports.start = convo => {
+    convo.send('You must be new! Please fill in the necessary info');
 }
 
-exports.run = (message, details) => {
-    let user = message.author.id;
-    let channel = message.channel;
-
-    let {firstName, lastName, email, phoneNum} = details;
+exports.run = async convo => {
+    const user = convo.user;
+    const {firstName, lastName, email, phoneNum} = convo.givenDetails;
     let result = {
-        firstName: firstName.val.capitalize(),
-        lastName: lastName.val.capitalize()
+        firstName: firstName.val.toLowerCase().capitalize(),
+        lastName: lastName.val.toLowerCase().capitalize()
     }
     if(email) result.email = email.val;
-    if(phoneNum) result.phoneNum = phoneNum.val;
+    if(phoneNum) result.phoneNum = phoneNum.val; // TODO better format
 
-    g.userData[user] = result;
-    channel.send(`Ok, ${firstName.val}, you're ready to go!`);
+    convo.send(`Ok, ${firstName.val}, you're ready to go!`);
 
-    saveUserData();
-
+    Database.saveUser(user, result);
 }
 
 // details
@@ -29,4 +27,15 @@ exports.neededDetails = {
 exports.optionalDetails = {
     email: 'text',
     phoneNum: 'text'
+}
+
+exports.detailTemplate = {
+    firstName: 'text',
+    lastName: 'text',
+    email: 'text',
+    phoneNum: 'text',
+    formats: {
+        needed: ['firstName', 'lastName'],
+        optional: ['email', 'phoneNum']
+    }
 }

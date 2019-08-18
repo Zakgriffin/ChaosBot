@@ -57,7 +57,7 @@ function eachMessage(content, convo) {
         let detKeyCaps = detKey;
         if(detObj.alias) {
             detKeyCaps = detObj.alias;
-            detObj = data[detKeyWithCaps];
+            detObj = data[detKeyCaps];
         }
         let parsingDetail = details[detObj.type];
 

@@ -3,13 +3,13 @@ const {msgBits} = require('../functions/other');
 
 class Conversation {
     constructor(source) {
+        //console.log(source.guild)
         if(!Conversation.instances[source.guild]) Conversation.instances[source.guild] = {};
-        if(source.author) {
-            Object.assign(this, msgBits(source));
-            delete this.content;
+        Object.assign(this, source);
+        delete this.content;
+        if(source.user) {
             Conversation.instances[this.guild][this.user] = this;
         } else {
-            Object.assign(this, source);
             Conversation.instances[this.guild].all = this;
         }
         this.prefix = Database.getGroup(this.guild).prefix;
@@ -64,15 +64,11 @@ Conversation.onMessage = function(message) {
     let {guild, channel, user} = msgBits(message);
     const insts = Conversation.instances[guild];
     if(!insts) return;
-    let convo = insts[user];
-    if(!convo && insts.all) {
-        convo = insts.all;
-    }
+    let convo = insts[user] || insts.all;
     if(convo && (!convo.staticChannel || channel === convo.channel)) {
-        insts.all.onMessage(message);
+        convo.onMessage(message);
         return true;
     }
-    return;
 }
 
 module.exports = Conversation;

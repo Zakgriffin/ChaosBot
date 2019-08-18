@@ -6,37 +6,29 @@ const groupPath = dataPath + '/groups'
 
 var groups = {};
 var users = {};
-exports.saveGroup = function(guild, obj) {
-    let toSave = obj || groups[guild];
-    fs.writeFileSync(`${groupPath}/${guild}.json`, JSON.stringify(toSave, null, 4));
-    if(!obj) delete groups[guild];
-}
-exports.getGroup = function(guild) {
-    if(groups[guild]) return groups[guild];
-    groups[guild] = JSON.parse(fs.readFileSync(`${groupPath}/${guild}.json`));
-    return groups[guild];
-}
-exports.unloadGroup = function(guild) {
-    if(groups[guild]) delete groups[guild];
-}
-exports.existsGroup = function(guild) {
-    return groups[guild];
-}
+exports.saveGroup = function(guild, obj) {save(guild, obj, groups);}
+exports.getGroup = function(guild) {return get(guild, groups);}
+exports.unloadGroup = function(guild) {unload(guild, groups);}
+exports.existsGroup = function(guild) {return exists(guild, groups);}
 
+exports.saveUser = function(user, obj) {save(user, obj, users);}
+exports.getUser = function(user) {return get(user, users);}
+exports.unloadUser = function(user) {unload(user, users);}
+exports.existsUser = function(user) {return exists(user, users);}
 
-exports.saveUser = function(user, obj) {
-    let toSave = obj || users[user];
-    fs.writeFileSync(`${userPath}/${user}.json`, JSON.stringify(toSave));
-    if(!obj) delete users[user];
+function save(key, obj, list) {
+    let toSave = obj || list[key];
+    fs.writeFileSync(`${list === users ? userPath : groupPath}/${key}.json`, JSON.stringify(toSave, null, 4));
+    if(!obj) delete list[key];
 }
-exports.getUser = function(user) {
-    if(users[user]) return users[user];
-    users[user] = JSON.parse(fs.readFileSync(`${groupPath}/${user}.json`));
-    return users[user];
+function get(key, list) {
+    if(list[key]) return list[key];
+    list[key] = JSON.parse(fs.readFileSync(`${list === users ? userPath : groupPath}/${key}.json`));
+    return list[key];
 }
-exports.unloadUser = function(user) {
-    if(users[user]) delete users[user];
+function unload(key, list) {
+    if(list[key]) delete list[key];
 }
-exports.existsUser = function(user) {
-    return users[user];
+function exists(key, list) {
+    return list[key] || fs.existsSync(`${list === users ? userPath : groupPath}/${key}.json`);
 }
