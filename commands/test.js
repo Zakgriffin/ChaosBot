@@ -1,9 +1,9 @@
-exports.onCall = convo => {
-    message.channel.send('Entered test command');
+exports.start = convo => {
+    convo.send('Entered test command');
 }
 
-exports.run = details => {
-    message.channel.send('WORKS');
+exports.run = async convo => {
+    convo.send('WORKS');
 }
 
 exports.detailTemplate = {

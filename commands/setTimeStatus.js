@@ -1,10 +1,10 @@
-exports.start = (message) => {
-    message.channel.send('How would you like to change your availabilty?');
+exports.start = convo => {
+    convo.send('How would you like to change your availabilty?');
 }
 
-exports.run = (message, details) => {
-    const user = message.author.id;
-    const channel = message.channel;
+exports.run = convo => {
+    const details = convo.givenDetails;
+    const {guild, user} = convo;
     const date = details.date.slashForm();
 
     let userData = g.userData[user];

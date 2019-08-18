@@ -1,25 +1,38 @@
 const {filesToObject} = require('../../functions/fileSystem');
 const details = filesToObject('./commands/details');
-const App = require('../../App');
-const Discord = require('discord.js');
+const Database = require('../../services/databaseHandler');
+const {RichEmbed} = require('discord.js');
 require('../../functions/primitive');
 
 exports.onEvent = async (command, content, convo) => {
+    if(command.instant) {
+        // no need for details
+        let promise = command.run(convo);
+        promise.then(() => {
+            Database.saveGroup(convo.guild);
+            convo.end();
+        });
+        return;
+    }
+
     convo.template = templateParse(command.detailTemplate);
     convo.givenDetails = {};
     convo.command = command;
+    command.start(convo);
     eachMessage(content.cutBefore(' '), convo);
 }
 
 function eachMessage(content, convo) {
-    let prefix = App.groups[convo.guild].prefix;
+    let prefix = convo.prefix;
     content = content.startsWith(prefix) ? content.cutBefore(prefix) : content;
 
     let first = content.cutAfter(' ').toLowerCase();
-    console.log(first);
     if(['done', 'confirm'].includes(first)) {
-        convo.command.run(convo.givenDetails);
-        convo.end();
+        let promise = convo.command.run(convo);
+        promise.then(() => {
+            Database.saveGroup(convo.guild);
+            convo.end();
+        });
         return;
     }
     let detsToParse = content.split(',');
@@ -115,7 +128,7 @@ function eachMessage(content, convo) {
     }
 
     // build embed
-    const embed = new Discord.RichEmbed().setColor(0x0000FF);
+    const embed = new RichEmbed().setColor(0x0000FF);
 
     // given
     if(awaitState === 'none') {
@@ -123,6 +136,7 @@ function eachMessage(content, convo) {
     } else {
         let text = '';
         for(let key of awaiting) {
+            if(!oldNewGiven[key]) continue;
             let t = `${key.camelToSpaces()}: ${(newDets[key] || oldDets[key]).standardForm()}`;
             if(newDets[key]) text +=  `- ${t} :point_left:\n`;
             else text += `- ${t}\n`;

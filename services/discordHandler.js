@@ -3,17 +3,25 @@ const {token} = require('../secrets.json');
 const {filesToObject} = require('../functions/fileSystem');
 const {msgBits} = require('../functions/other');
 const App = require('../app');
+const Database = require('./databaseHandler');
 const Conversation = require('../classes/Conversation');
 
 const client = new Client();
 const commands = filesToObject('./commands');
 
+let debug = true; // <-- very safe
 client.on('message', message => {
+    if(debug && message.content.startsWith('redo')) {
+        client.emit('guildCreate', message.guild);
+        return;
+    }
+
     if(message.author.bot) return;
     if(Conversation.onMessage(message)) return;
     let {guild, content} = msgBits(message);
 
-    let prefix = App.groups[guild].prefix;
+    let prefix = Database.getGroup(guild).prefix;
+    Database.unloadGroup(guild);
     if(!content.startsWith(prefix)) return;
 
     let cmd = content.split(' ')[0].substring(prefix.length);

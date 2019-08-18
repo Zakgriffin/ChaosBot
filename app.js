@@ -1,9 +1,9 @@
 const Discord = require('./services/discordHandler');
 const Calendar = require('./services/calendarHandler');
+const Database = require('./services/databaseHandler')
 const {filesToObject} = require('./functions/fileSystem');
 
 const events = filesToObject('./events', true);
-var groups = filesToObject('./saved_data/group');
 
 exports.finishSetup = function() {
     Discord.finishSetup();
@@ -14,4 +14,3 @@ exports.trigger = function(event, ...args) {
 }
 
 exports.events = events;
-exports.groups = groups;
