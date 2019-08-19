@@ -46,8 +46,8 @@ class Conversation {
         return promise;
     }
 
-    send(message) {
-        this.channel.send(message);
+    send(message, extras) {
+        this.channel.send(message, extras);
     }
 
     end() {

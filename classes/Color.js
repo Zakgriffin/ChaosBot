@@ -1,7 +1,7 @@
 /*
 Much of this code was stolen from () but has been modified to fit my needs
 */
-const {map} = require('./util');
+const {map} = require('../functions/primitive');
 
 class Color {
     constructor(a, b, c, type) {
@@ -91,10 +91,9 @@ class Color {
         return this;
     }
 }
-exports.Color = Color;
 
 // static
-exports.interpolateHSL = function(color1, color2, factor) {
+Color.interpolateHSL = function(color1, color2, factor) {
     if(color1.type == 'rgb') color1.rgb2hsl();
     if(color2.type == 'rgb') color2.rgb2hsl();
     if(arguments.length < 3) factor = 0.5;
@@ -104,3 +103,5 @@ exports.interpolateHSL = function(color1, color2, factor) {
     }
     return blend;
 }
+
+module.exports = Color;

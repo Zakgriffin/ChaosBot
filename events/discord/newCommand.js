@@ -117,7 +117,7 @@ function eachMessage(content, convo) {
         }
         if(isFull) {
             awaitState = 'optional';
-            for(let key of form.optional) {
+            for(let key of form.optional || []) {
                 if(!oldNewGiven[key]) {
                     isFull = false;
                     break;

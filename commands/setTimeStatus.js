@@ -1,35 +1,39 @@
+const fs = require('fs');
 const Database = require('../services/databaseHandler');
+const {makeGraphImage} = require('../functions/image');
 
 exports.start = convo => {
     convo.send('How would you like to change your availabilty?');
 }
 
-exports.run = convo => {
+exports.run = async convo => {
     const details = convo.givenDetails;
     const user = convo.user;
     const date = details.date.slashForm();
-    const {status, startTime, endTime}
+    const {status, start, end} = details;
 
     let userObj = Database.getUser(user);
     if(!userObj.dates) userObj.dates = {};
     let oldStatus = userObj.dates[date] || '0U';
 
-    let newStatus = insertTimeStatus(oldStatus, status.val, startTime, endTime);
-
+    convo.send('Working on it...');
+    let newStatus = insertTimeStatus(oldStatus, status.val, start, end);
+    userObj.dates[date] = newStatus;
     Database.saveUser(user, userObj);
-    
+
     let bar = newStatus.split(' ');
     for(let i = 0; i < bar.length; i++) {
         let time = bar[i].toTime();
         bar[i] = {time, val: time.status.statToVal()};
     }
     let data = [{bar, label: date}];
-    makeGraphImage(`${user}_tempImg.png`, data, 0, 24).then(() => {
-        channel.send("Your status has been updated!", {files: [`${user}_tempImg.png`]});
-    });
+    let path = `${user}_tempImg.png`;
+    await makeGraphImage(path, data, 0, 24);
+    convo.send("Your status has been updated!", {files: [path]});
+    //fs.unlinkSync(path);
 }
 
-exports.neededDetails = {
+exports.detailTemplate = {
     start: 'time',
     end: 'time',
     date: '',
@@ -41,14 +45,25 @@ exports.neededDetails = {
 
 
 function insertTimeStatus(str, status, startTime, endTime) {
+    // TODO needs some fixing
+    str += ' '; // <- bad temp fix
+
+    let startVal = val(startTime);
+    let endVal = val(endTime);
+    if(startVal > endVal) {
+        if(endVal === 0) {
+            endTime.hour = 24;
+            endVal = val(endTime);
+        } else throw 'End time is before start time';
+    }
     let arr = str.split(' ');
     
     let s = 0, e = arr.length - 1;
     for(;s < arr.length - 1; s++) {
-       if(val(arr[s]) >= val(startTime)) break;
+       if(val(arr[s]) >= startVal) break;
     }
     for(;e > 0; e--) {
-       if(val(arr[e]) <= val(endTime)) break;
+       if(val(arr[e]) <= endVal) break;
     }
     
     let flag, optStatus;
@@ -60,6 +75,9 @@ function insertTimeStatus(str, status, startTime, endTime) {
     if(flag) arr.splice(s, 0, objToStr(startTime, status));
     if(optStatus)arr.splice(s + 1, 0, objToStr(endTime, optStatus));
     
+    for(let i = arr.length - 1; i >= 0 && stringToObj(arr[i]).hour >= 24; i--) {
+        arr.pop();
+    }
     return arr.join(' ');
 }
 function objToStr(time, status) {
