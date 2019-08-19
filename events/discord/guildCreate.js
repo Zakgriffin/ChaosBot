@@ -1,5 +1,6 @@
 const Conversation = require('../../classes/Conversation');
 const Database = require('../../services/databaseHandler');
+const Calendar = require('../../services/calendarHandler');
 
 exports.onEvent = async discordGuild => {
     const guild = discordGuild.id;
@@ -45,10 +46,20 @@ exports.onEvent = async discordGuild => {
     });
     groupData.authRole = response;
 
+    question = `Understood, the last thing I need is a google email. Tell me one now with "email [Your Calendar Email]"`;
+    response = await convo.ask(question, (res, resolve) => {
+        // condition
+        let words = res.split(' ');
+        if(words[0] === 'email' && words[1]) return resolve(words[1]);
+        convo.ask(`Sorry, I didn't understand that. Remember, I need "email [Your Calendar Email]"`);
+    });
+    groupData.email = response;
+    let token = await Calendar.newToken(groupData.email, convo);
+    groupData.token = token;
+
     convo.send(`Alright, that's all for setup. You can now use all my features. Try ${groupData.prefix}help to see what commands I know`);
     convo.end();
 
-    console.log(groupData);
     Database.saveGroup(guild, groupData);
 }
 

@@ -12,7 +12,9 @@ class Conversation {
         } else {
             Conversation.instances[this.guild].all = this;
         }
-        this.prefix = Database.getGroup(this.guild).prefix;
+        if(Database.existsGroup(this.guild)) {
+            this.prefix = Database.getGroup(this.guild).prefix;
+        }
     }
 
     onMessage(message) {
