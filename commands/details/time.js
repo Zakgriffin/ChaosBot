@@ -30,10 +30,11 @@ class TimeD {
         }
         return new TimeD(h - time2.hour, m - time2.mins);
     }
-
+    /*
     val() {
         return this.hour + this.mins / 60;
     }
+    */
 }
 exports.TimeD = TimeD;
 

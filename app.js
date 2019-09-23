@@ -1,5 +1,5 @@
 const Discord = require('./services/discordHandler');
-const Calendar = require('./services/calendarHandler');
+//const Calendar = require('./services/calendarHandler');
 const Database = require('./services/databaseHandler');
 
 const {filesToObject} = require('./functions/fileSystem');
