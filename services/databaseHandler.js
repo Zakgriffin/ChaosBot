@@ -20,6 +20,7 @@ function save(key, obj, list) {
     let toSave = obj || list[key];
     fs.writeFileSync(`${list === users ? userPath : groupPath}/${key}.json`, JSON.stringify(toSave, null, 4));
     if(!obj) delete list[key];
+    unload(key, list);
 }
 function get(key, list) {
     if(list[key]) return list[key];

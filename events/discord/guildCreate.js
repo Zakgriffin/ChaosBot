@@ -28,24 +28,27 @@ exports.onEvent = async discordGuild => {
     groupData.users = users;
 
     let question = `Thanks for adding me to your server! To set me up, I need to know a few things.\nFirstly, I need a prefix for you to call me by like "!" or "?".\nTell me one now with "prefix [Your Prefix]"`;
-    let response = await convo.ask(question, (res, resolve) => {
+    let response = await convo.ask(question, (testResponse, resolve) => {
         // condition
-        let words = res.split(' ');
-        if(words[0] === 'prefix' && words[1]) return resolve(words[1]);
-        convo.ask(`Sorry, I didn't understand that. Remember, I need "prefix [Your Prefix]"`);
+        let words = testResponse.split(' ');
+        if(words[0] === 'prefix' && words[1]) {
+            console.log(testResponse)
+            return resolve(words[1]);
+        }
+        convo.send(`Sorry, I didn't understand that. Remember, I need "prefix [Your Prefix]"`);
     });
     groupData.prefix = response;
 
 
     question = `Ok, your prefix is now "${groupData.prefix}". Next I need a role that all users capable of scheduling will have tell me one now with "role [Your Role]"`;
-    response = await convo.ask(question, (res, resolve) => {
+    response = await convo.ask(question, (testResponse, resolve) => {
         // condition
-        let words = res.split(' ');
+        let words = testResponse.split(' ');
         if(words[0] === 'role' && words[1]) return resolve(words[1]);
-        convo.ask(`Sorry, I didn't understand that. Remember, I need "role [Your Role]"`);
+        convo.send(`Sorry, I didn't understand that. Remember, I need "role [Your Role]"`);
     });
     groupData.authRole = response;
-
+    /*
     question = `Understood, the last thing I need is a google email. Tell me one now with "email [Your Calendar Email]"`;
     response = await convo.ask(question, (res, resolve) => {
         // condition
@@ -56,7 +59,7 @@ exports.onEvent = async discordGuild => {
     groupData.email = response;
     let token = await Calendar.newToken(groupData.email, convo);
     groupData.token = token;
-
+    */
     convo.send(`Alright, that's all for setup. You can now use all my features. Try ${groupData.prefix}help to see what commands I know`);
     convo.end();
 

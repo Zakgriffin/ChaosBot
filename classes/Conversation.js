@@ -3,48 +3,53 @@ const {msgBits} = require('../functions/other');
 
 class Conversation {
     constructor(source) {
-        //console.log(source.guild)
         if(!Conversation.instances[source.guild]) Conversation.instances[source.guild] = {};
         Object.assign(this, source);
         delete this.content;
-        if(source.user) {
-            Conversation.instances[this.guild][this.user] = this;
-        } else {
-            Conversation.instances[this.guild].all = this;
-        }
-        if(Database.existsGroup(this.guild)) {
-            this.prefix = Database.getGroup(this.guild).prefix;
-        }
+
+        if(source.user) Conversation.instances[this.guild][this.user] = this;
+        else Conversation.instances[this.guild].all = this;
+
+        if(Database.existsGroup(this.guild)) this.prefix = Database.getGroup(this.guild).prefix;
+        else this.ignorePrefix = true;
     }
 
     onMessage(message) {
+        // called for every 
         let content = message.content;
-        if(!content.startsWith(this.prefix) && !this.ignorePrefix) return;
-        if(content.split()[0].toLowerCase().includes('exit') && !this.cantExit) {
+        if(!(content.startsWith(this.prefix) || this.ignorePrefix)) return; // no conversations for this user
+        if(content.split()[0].toLowerCase().includes('exit')) {
             // user exited conversation
             this.send('Exited!');
             if(this.asked) this.asked.reject();
-            this.end();
-        } else if(this.asked) {
-            // user responded
-            if(!this.staticChannel) this.channel = message.channel;
-            if(this.cond) {
-                this.cond(content, this.asked.resolve);
-                return;
-            }
+            return this.end();
+        }
+        // user responded
+        if(!this.staticChannel) this.channel = message.channel;
+        if(this.conditionalResolve) {
+            // some condition in place
+            this.conditionalResolve(content, this.asked.resolve);
+        } else {
+            // no condition, act with immediate resolve
             this.asked.resolve(content);
-            this.asked = null;
         }
     }
 
-    ask(question, withCondition) {
+    ask(question, conditionalResolve) {
+
+        // returns a promise that resolves to the content of next response
+        // or, if conditional is provided, resvoles to when criteria is met
+        let a = this;
         let promise = new Promise((resolve, reject) => {
             this.channel.send(question);
             this.asked = {resolve, reject};
-            if(withCondition) {
-                this.cond = withCondition;
+            if(conditionalResolve) {
+                a.conditionalResolve = conditionalResolve;
             }
+        }).then(function() {
+            a.asked = null;
         });
+        console.log(promise)
         return promise;
     }
 
