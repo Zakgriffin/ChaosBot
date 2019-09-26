@@ -3,19 +3,23 @@ const {msgBits} = require('../functions/other');
 
 class Conversation {
     constructor(source) {
-        if(!Conversation.instances[source.guild]) Conversation.instances[source.guild] = {};
-        Object.assign(this, source);
+        // creating new conversations
+        Object.assign(this, source); // source holds message bits, and other info
         delete this.content;
 
-        if(source.user) Conversation.instances[this.guild][this.user] = this;
+        if(!Conversation.instances[this.guild]) Conversation.instances[this.guild] = {};
+        if(source.user || !source.allUsers) Conversation.instances[this.guild][this.user] = this;
         else Conversation.instances[this.guild].all = this;
 
+        // assign a prefix
         if(Database.existsGroup(this.guild)) this.prefix = Database.getGroup(this.guild).prefix;
         else this.ignorePrefix = true;
     }
 
     onMessage(message) {
-        // called for every 
+        // handle response from user
+        if(!this.asked) return; // no pending question
+
         let content = message.content;
         if(!(content.startsWith(this.prefix) || this.ignorePrefix)) return; // no conversations for this user
         if(content.split()[0].toLowerCase().includes('exit')) {
@@ -25,57 +29,81 @@ class Conversation {
             return this.end();
         }
         // user responded
-        if(!this.staticChannel) this.channel = message.channel;
-        if(this.conditionalResolve) {
-            // some condition in place
-            this.conditionalResolve(content, this.asked.resolve);
-        } else {
-            // no condition, act with immediate resolve
-            this.asked.resolve(content);
-        }
+        if(!this.staticChannel) this.channel = message.channel; // re-assign channel if user moved
+
+        let promise = this.asked;
+        this.asked = null;
+        promise.resolve(content); // resolve promise to message content
     }
 
-    ask(question, conditionalResolve) {
-
+    ask(question) {
         // returns a promise that resolves to the content of next response
-        // or, if conditional is provided, resvoles to when criteria is met
-        let a = this;
+        const a = this;
+        a.send(question);
         let promise = new Promise((resolve, reject) => {
-            this.channel.send(question);
-            this.asked = {resolve, reject};
-            if(conditionalResolve) {
-                a.conditionalResolve = conditionalResolve;
-            }
-        }).then(function() {
-            a.asked = null;
+            a.asked = {resolve, reject}; // save promise functions in convo object as "asked"
         });
-        console.log(promise)
+        return promise;
+    }
+
+    askConditional(question, condition) {
+        const a = this;
+        a.send(question);
+        let promise = new Promise((resolve, reject) => {
+            function askSub() {
+                new Promise((resolveSub, rejectSub) => {
+                    a.asked = {resolve: resolveSub, reject: rejectSub}; // save sub promise functions in convo object as "asked"
+                }).then(content => {
+                    // user responded and sub promise resolved
+                    let result = condition(content);
+                    if(result.parsed) {
+                        // condition for content met, resolve
+                        resolve(result.parsed);
+                    } else {
+                        // condition not met, recurse: create new promise
+                        a.send(result.onIssue);
+                        askSub();
+                    }
+                });
+            }
+            askSub();
+        });
         return promise;
     }
 
     send(message, extras) {
+        // extras for images, attachments, etc
         this.channel.send(message, extras);
     }
 
     end() {
-        delete Conversation.instances[this.guild][this.user];
+        // end conversation and remove it from instances
+        if(this.allUsers) delete Conversation.instances[this.guild].all;
+        else delete Conversation.instances[this.guild][this.user];
+        
         if(Object.keys(Conversation.instances[this.guild]).length === 0) {
+            // no remaining conversations in guild, remove empty object
             delete Conversation.instances[this.guild];
         }
     }
 }
-Conversation.instances = {};
-//setInterval(() => console.log(Conversation.instances), 500);
+Conversation.instances = {}; // holds all active conversations
+
+setInterval(() => console.log(Conversation.instances), 500);
 
 Conversation.onMessage = function(message) {
+    // called whenever discord client recieves a message
     let {guild, channel, user} = msgBits(message);
-    const insts = Conversation.instances[guild];
-    if(!insts) return;
-    let convo = insts[user] || insts.all;
-    if(convo && (!convo.staticChannel || channel === convo.channel)) {
+    const guildInstances = Conversation.instances[guild];
+    if(!guildInstances) return; // no active conversations for this guild
+
+    let convo = guildInstances[user] || guildInstances.all;
+    if(convo && (channel === convo.channel || !convo.staticChannel)) {
+        // conversation exists, trigger it and return true
         convo.onMessage(message);
         return true;
     }
+    // conversation does not exist, return falsely
 }
 
 module.exports = Conversation;

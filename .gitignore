@@ -3,3 +3,4 @@ secrets.json
 saved_data
 other
 test.js
+.DS_store

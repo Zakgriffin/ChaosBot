@@ -8,7 +8,8 @@ exports.onEvent = async discordGuild => {
     let convo = new Conversation({guild, channel,
         cantExit: true,
         staticChannel: true,
-        ignorePrefix: true
+        ignorePrefix: true,
+        allUsers: true
     });
 
     if(Database.existsGroup(guild)) {
@@ -21,41 +22,37 @@ exports.onEvent = async discordGuild => {
 
     groupData.name = discordGuild.name;
     let users = [];
+    /*
     for(let member of discordGuild.members.array()) {
         //if(member.user.bot) continue;
         users.push(member.id);
     }
     groupData.users = users;
-
-    let question = `Thanks for adding me to your server! To set me up, I need to know a few things.\nFirstly, I need a prefix for you to call me by like "!" or "?".\nTell me one now with "prefix [Your Prefix]"`;
-    let response = await convo.ask(question, (testResponse, resolve) => {
-        // condition
-        let words = testResponse.split(' ');
-        if(words[0] === 'prefix' && words[1]) {
-            console.log(testResponse)
-            return resolve(words[1]);
-        }
-        convo.send(`Sorry, I didn't understand that. Remember, I need "prefix [Your Prefix]"`);
-    });
-    groupData.prefix = response;
-
-
-    question = `Ok, your prefix is now "${groupData.prefix}". Next I need a role that all users capable of scheduling will have tell me one now with "role [Your Role]"`;
-    response = await convo.ask(question, (testResponse, resolve) => {
-        // condition
-        let words = testResponse.split(' ');
-        if(words[0] === 'role' && words[1]) return resolve(words[1]);
-        convo.send(`Sorry, I didn't understand that. Remember, I need "role [Your Role]"`);
-    });
-    groupData.authRole = response;
+    */
+    convo.askForInfo = function(question, keyword) {
+        return this.askConditional(question, content => {
+            // condition
+            let words = content.split(' ');
+            if(words[0] === keyword && words[1]) {
+                return {parsed: words[1]};
+            } else {
+                return {onIssue: `Sorry, I didn't understand that. Remember, I need "${keyword} [Your ${keyword.capitalize()}]"`};
+            }
+        });
+    }
+    groupData.prefix = await convo.askForInfo(
+        `Thanks for adding me to your server! To set me up, I need to know a few things.\nFirstly, I need a prefix for you to call me by like "!" or "?".\nTell me one now with "prefix [Your Prefix]"`,
+        'prefix'
+    );
+    groupData.role = await convo.askForInfo(
+        `Ok, your prefix is now "${groupData.prefix}". Next I need a role that all users capable of scheduling will have tell me one now with "role [Your Role]"`,
+        'role'
+    );
     /*
-    question = `Understood, the last thing I need is a google email. Tell me one now with "email [Your Calendar Email]"`;
-    response = await convo.ask(question, (res, resolve) => {
-        // condition
-        let words = res.split(' ');
-        if(words[0] === 'email' && words[1]) return resolve(words[1]);
-        convo.ask(`Sorry, I didn't understand that. Remember, I need "email [Your Calendar Email]"`);
-    });
+    groupData.email = convo.askForInfo(
+        `Understood, the last thing I need is a google email. Tell me one now with "email [Your Calendar Email]"`,
+        'email'
+    );
     groupData.email = response;
     let token = await Calendar.newToken(groupData.email, convo);
     groupData.token = token;
@@ -83,7 +80,7 @@ function getDefaultChannel(guild) {
     // hold on to your hats!
     return guild.channels
         .filter(c => c.type === "text" &&
-        c.permissionsFor(guild.client.user).has("SEND_MESSAGES"))
+        c.permissionsFor(guild.client.user).has('SEND_MESSAGES'))
         .sort((a, b) => a.position - b.position)
         .first();
 }
